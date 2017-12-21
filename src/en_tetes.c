@@ -698,7 +698,7 @@ void callback_telnet (const u_char *packet) {
 			}
 		} else {
 			// Affichage texte si pas de caractère d'échappement
-			if ((packet[i] > 31 && packet[i] < 128) || packet[i] == '\n' || packet[i] == '\r')
+			if (isprint(packet[i]) || isspace(packet[i]))
 				printf("%c", packet[i]);
 			else
 				printf(".");

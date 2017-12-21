@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pcap.h>
+#include <ctype.h>
 
 void callback_ethernet (u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void callback_ip (const u_char *packet);
