@@ -55,29 +55,55 @@ void callback_ip (const u_char *packet) {
 void callback_udp (const u_char *packet) {
 	const struct udphdr *udp;
 	udp = (struct udphdr*)(packet);
+	int port;
 
 	printf("\n\t\t-UDP-\n\n");
 
 	printf("\t\tPort Source : %d", ntohs(udp->source));
 	switch (ntohs(udp->source)) {
+		// Ajouter callbacks
+		case 53:
+			printf(" (DNS)\n");
+			port = 53;
+			break;
 		case 68:
 			printf(" (BOOTP Client)\n");
+			port = 68;
 			break;
 		case 67:
 			printf(" (BOOTP Server)\n");
+			port = 67;
 			break;
 		default:
 			printf("\n");
 	}
 
 	printf("\t\tPort Destination : %d", ntohs(udp->dest));
-	switch (ntohs(udp->source)) {
+	switch (ntohs(udp->dest)) {
+		case 53:
+			printf(" (DNS)\n");
+			port = 53;
+			break;
 		case 68:
 			printf(" (BOOTP Client)\n");
-			callback_bootp(packet + 8);
+			port = 68;
 			break;
 		case 67:
 			printf(" (BOOTP Server)\n");
+			port = 67;
+			break;
+		default:
+			printf("\n");
+	}
+
+	switch (port) {
+		case 53:
+			callback_dns(packet + 8);
+			break;
+		case 68:
+			callback_bootp(packet + 8);
+			break;
+		case 67:
 			callback_bootp(packet + 8);
 			break;
 		default:
@@ -704,4 +730,85 @@ void callback_telnet (const u_char *packet) {
 				printf(".");
 		}
 	}
+}
+
+void callback_dns (const u_char *packet) {
+	const struct dnshdr *dns;
+	dns = (struct dnshdr*)(packet);
+
+	printf("\n\t\t\t-DNS-\n\n");
+
+	printf("\t\t\tIdentification : 0x%0x\n", ntohs(dns->identification));
+	printf("\t\t\tFlags : \n");
+
+	printf("\t\t\t\t- Q/R : ");
+	if (ntohs(dns->flags) & DNS_QR)
+		printf("Response\n");
+	else
+		printf("Query\n");
+
+	// décalage pour lecture
+	printf("\t\t\t\t- Opcode : ");
+	switch ((ntohs(dns->flags) & DNS_OPCODE) >> 11) {
+		case 0:
+			printf("Standard Query\n");
+			break;
+		case 1:
+			printf("Inverse Query\n");
+			break;
+		case 2:
+			printf("Server Status Request\n");
+			break;
+		case 4:
+			printf("Notify\n");
+			break;
+		case 5:
+			printf("Update\n");
+			break;
+	}
+
+	if (ntohs(dns->flags) & DNS_QR) {
+		printf("\t\t\t\t- Authoritative Answer : ");
+		if (ntohs(dns->flags) & DNS_AA)
+			printf("Yes\n");
+		else
+			printf("No\n");
+	}
+
+	printf("\t\t\t\t- Truncated : ");
+	if (ntohs(dns->flags) & DNS_TC)
+		printf("Yes\n");
+	else
+		printf("No\n");
+
+	printf("\t\t\t\t- Recursion Desired : ");
+	if (ntohs(dns->flags) & DNS_RD)
+		printf("Yes\n");
+	else
+		printf("No\n");
+
+	if (ntohs(dns->flags) & DNS_QR) {
+		printf("\t\t\t\t- Recursion Available : ");
+		if (ntohs(dns->flags) & DNS_RA)
+			printf("Yes\n");
+		else
+			printf("No\n");
+
+		printf("\t\t\t\t- Authenticated Data : ");
+		if (ntohs(dns->flags) & DNS_AD)
+			printf("Yes\n");
+		else
+			printf("No\n");
+	}
+
+	printf("\t\t\t\t- Data Checked : ");
+	if (ntohs(dns->flags) & DNS_CD)
+		printf("No\n");
+	else
+		printf("Yes\n");
+
+	printf("\t\t\tQuestions : %d\n", ntohs(dns->nb_questions));
+	printf("\t\t\tAnswer RRs : %d\n", ntohs(dns->nb_answersRR));
+	printf("\t\t\tAuthority RRs : %d\n", ntohs(dns->nb_authRR));
+	printf("\t\t\tAdditionnal RRs : %d\n", ntohs(dns->nb_addRR));
 }

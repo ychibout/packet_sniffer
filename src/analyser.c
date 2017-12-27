@@ -44,7 +44,7 @@ int main (int argc, char ** argv) {
 	}
 
 	if (interface == NULL && file == NULL) {
-		fprintf(stderr, "%s: option -f or -o is required\n", argv[0]);
+		fprintf(stderr, "%s: option -i or -o is required\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 

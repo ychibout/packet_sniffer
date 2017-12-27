@@ -13,6 +13,7 @@
 #include <netinet/ether.h>
 #include <net/if_arp.h>
 #include "bootp.h"
+#include "dns.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,5 +33,6 @@ void callback_ftp (const u_char *packet);
 void callback_pop (const u_char *packet);
 void callback_imap (const u_char *packet);
 void callback_telnet (const u_char *packet);
+void callback_dns (const u_char *packet);
 
 #endif
